@@ -3,27 +3,32 @@ import turtle
 import copy
 import time
 from turtle import Screen
-global head, snake,finished
-finished=False
-state_running= True
-contact=0
-snake=[(0,0),(0,20),(0,40),(0,60),(0,80)]
-turtle.shape('square')
-monster=(-100,-100)
-head=snake[-1]
 
-def configureScreen(w=500,h=500):
+# head, snake,finished are global vars
+finished=False
+game_state = True
+contact=0
+snake=[(0,0),(0,20),(0,40),(0,60),(0,80)] # position of each part of snake
+head=snake[-1]
+monster=(-100,-100)
+turtle.shape('square')
+
+def init_screen(w=500,h=500) -> Screen():
+    # return a turtle.Screen() object
+    # w,h are width & height of the screen object
     s=Screen()
     s.setup(w,h)
     s.title('Snake')
     s.tracer(0)
     return s
 
-def pause():
-    global state_running
-    state_running= not state_running
+def turn_snake_to_pixel_state():
+    # toggle state of the game (Run or Pause)
+    global game_state 
+    game_state = not game_state 
 
-def get_snake(snake): #Draw the snake
+def draw_snake(snake): 
+    #Draw the snake block by block
     turtle.shape('square')
     turtle.color('green','black')
     i=0
@@ -48,11 +53,13 @@ Click anywhere on the screen
 to start the game.''',font='black 12 bold')
 
 aim=[0,20]
-def change(x,y): #Change the direction of the snake.
+def turn_snake_to_pixel(x,y): 
+    #turn_snake_to_pixel the direction of the snake.
+    global aim
     aim[0]=x
     aim[1]=y
 
-def setFoods():
+def get_foods():
     global foods
     Foods=[]
     position=[]
@@ -70,9 +77,9 @@ def setFoods():
         Foods.append(food)
         i+=1
     return Foods
-foods=setFoods()
+foods=get_foods()
 
-def get_monster(monster):
+def draw_monster(monster):
     turtle.shape('square')
     turtle.color('purple')
     turtle.penup()
@@ -93,11 +100,11 @@ def move_monster():
     speed_snake=200
     time_passed=int(current_time-startTime)
     print(time_passed)
-    print(state_running)
+    print(game_state )
     if finished==False:
         if contacted()==True:  #Count the number of times of contaction.
             contact+=1
-        if state_running==True:
+        if game_state ==True:
             finished=False
             switch=True
             turtle.clear()
@@ -114,7 +121,7 @@ def move_monster():
                     turtle.goto(x,y)
                     turtle.pendown()
                     turtle.write(value)
-                get_snake(snake)
+                draw_snake(snake)
                 dict_food={}
                 for (x,y,value) in foods: #Create a dictionary of positions corresponding to values.
                     dict_food[(x,y)]=value
@@ -127,10 +134,10 @@ def move_monster():
                             foods.remove((x,y,z))
                 if len(foods)==0: #All foods are eaten.
                     finished = True
-                get_snake(snake)
+                draw_snake(snake)
                 if finished==True: #Present the final status.
-                    get_snake(snake)
-                    get_monster(monster)
+                    draw_snake(snake)
+                    draw_monster(monster)
                     turtle.color('cyan')
                     turtle.penup()
                     turtle.goto(snake[-1][0]-40,snake[-1][1]-40)
@@ -151,11 +158,11 @@ def move_monster():
                     switch=True
                 if -20<=monster[0]-snake[-1][0]<=20 and -20<=monster[1]- snake[-1][1]<=20:
                     finished = True
-                get_monster(monster)
+                draw_monster(monster)
                 if finished!=True:
                     pass
                 else:
-                    get_monster(monster)
+                    draw_monster(monster)
                     turtle.penup()
                     turtle.goto(snake[-1][0]-40,snake[-1][1]-40)
                     turtle.write('Game Over!!!',align='left',font='Arial 16 bold')    
@@ -168,7 +175,7 @@ def move_monster():
 def start(): #Initialize the game and prompt the user to click and start.
     startTime=time.time()
     turtle.clear()
-    setFoods()
+    get_foods()
     for (x,y,value) in foods:
         turtle.color('black')
         turtle.penup()
@@ -176,18 +183,18 @@ def start(): #Initialize the game and prompt the user to click and start.
         turtle.pendown()
         turtle.write(value)    
     instruction()
-    get_snake(snake)
-    get_monster(monster)
+    draw_snake(snake)
+    draw_monster(monster)
 
 def main(x,y):
     global startTime
     turtle.hideturtle()
     turtle.listen()
-    turtle.onkey(lambda: change(0,20), 'Up')
-    turtle.onkey(lambda: change(0,-20), 'Down')
-    turtle.onkey(lambda: change(-20,0), 'Left')
-    turtle.onkey(lambda: change(20,0), 'Right')
-    turtle.onkey(pause, 'space')
+    turtle.onkey(lambda: turn_snake_to_pixel(0,20), 'Up')
+    turtle.onkey(lambda: turn_snake_to_pixel(0,-20), 'Down')
+    turtle.onkey(lambda: turn_snake_to_pixel(-20,0), 'Left')
+    turtle.onkey(lambda: turn_snake_to_pixel(20,0), 'Right')
+    turtle.onkey(turn_snake_to_pixel_state, 'space')
     startTime=time.time()
     print('time:',startTime)
     instruction()
@@ -195,7 +202,7 @@ def main(x,y):
     turtle.update()
     turtle.done()
 
-g_screen=configureScreen()
+g_screen=init_screen()
 g_screen.tracer(0)
 turtle.tracer(False)
 start()
